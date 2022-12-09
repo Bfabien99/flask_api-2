@@ -4,7 +4,7 @@ import sqlite3
 
 app = Flask(__name__)
 
-def db_connect():
+def db_connection():
     conn = None
     try:
         conn = sqlite3.connect('books.sqlite')
@@ -15,11 +15,19 @@ def db_connect():
 
 @app.route('/books', methods=['GET', 'POST'])
 def books():
+    conn = db_connection()
+    cursor = conn.cursor()
+    
     if request.method == 'GET':
-        if len(books_list)>0:
-            return jsonify(books_list)
+        cursor = conn.execute("SELECT * FROM book")
+        books = [
+            dict(id=row[0], author=row[1], language=row[2], title=[row[3]])
+            for row in cursor.fetchall()
+        ]
+        if books is not None:
+            return jsonify(books)
         else:
-            return 'Nothing found!'
+            return jsonify({'message':'Nothing found!'}), 200
         
     if request.method == 'POST':
         new_author = request.form['author']
