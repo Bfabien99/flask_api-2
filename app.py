@@ -58,7 +58,19 @@ def single_book(id):
         return jsonify({'error':'Book not found'}),404
             
     if request.method == 'PUT':
-        return jsonify(''),204
+        for book in books_list:
+            if book['id'] == id:
+                book['author'] = request.form['author']
+                book['language'] = request.form['language']
+                book['title'] = request.form['title']
+                
+                book_update = {
+                    'id': id,
+                    'author': book['author'],
+                    'language': book['language'],
+                    'title': book['title']
+                }
+                return jsonify(book_update),202
     
     if request.method == 'DELETE':
         return jsonify(''),204
