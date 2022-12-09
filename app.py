@@ -29,11 +29,40 @@ def books():
             return jsonify(books_list)
         else:
             return 'Nothing found!'
+        
+    if request.method == 'POST':
+        new_author = request.form['author']
+        new_lang = request.form['language']
+        new_title = request.form['title']
+        iD = books_list[-1]['id']+1
+        
+        new_obj = {
+            'id': iD,
+            'author': new_author,
+            'language': new_lang,
+            'title': new_title
+        }
+        books_list.append(new_obj)
+        
+        return jsonify(new_obj), 201
 
 
-@app.route('/<name>')
-def print_name(name):
-    return 'His , {}'.format(name)
+@app.route('/book/<int:id>', methods=['GET', 'PUT', 'DELETE'])
+def single_book(id):
+    if request.method == 'GET':
+        for book in books_list:
+            if book['id'] == id:
+                return jsonify(book),200
+            pass
+           
+        return jsonify({'error':'Book not found'}),404
+            
+    if request.method == 'PUT':
+        return jsonify(''),204
+    
+    if request.method == 'DELETE':
+        return jsonify(''),204
+        
 
 
 if __name__ == '__main__':
