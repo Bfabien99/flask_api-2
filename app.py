@@ -63,25 +63,27 @@ def single_book(id):
             return jsonify({'message':'Nothing found!'}), 404
             
     if request.method == 'PUT':
-        sql = """UPDATE 
-        """
-        book['author'] = request.form['author'].capitalize()
-        book['language'] = request.form['language'].capitalize()
-        book['title'] = request.form['title'].capitalize()
+        sql = "UPDATE book SET author=?, language=?, title=? WHERE id=?"
+        
+        author = request.form['author']
+        language = request.form['language']
+        title = request.form['title']
         
         book_update = {
             'id': id,
-            'author': book['author'],
-            'language': book['language'],
-            'title': book['title']
+            'author': author,
+            'language': language,
+            'title': title
         }
+        cursor.execute(sql, (author, language, title, id))
+        conn.commit()
         return jsonify(book_update),202
     
     if request.method == 'DELETE':
-        for index, book in enumerate(books_list):
-            if book['id'] == id:
-                books_list.pop(index)
-        return jsonify(books_list),202
+        sql = "DELETE FROM book WHERE id=?"
+        cursor.execute(sql, (id,))
+        conn.commit()
+        return jsonify({'message':'Book {} was deleted'.format(id)}),202
         
 
 
