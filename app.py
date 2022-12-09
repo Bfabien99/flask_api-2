@@ -30,46 +30,52 @@ def books():
             return jsonify({'message':'Nothing found!'}), 200
         
     if request.method == 'POST':
-        new_author = request.form['author']
-        new_lang = request.form['language']
-        new_title = request.form['title']
-        iD = books_list[-1]['id']+1
-        
+        new_author = request.form['author'].capitalize()
+        new_lang = request.form['language'].capitalize()
+        new_title = request.form['title'].capitalize()
+        sql = """INSERT INTO book (author, language, title) VALUES (?, ?, ?)"""
+        cursor = conn.execute(sql, (new_author, new_lang, new_title))
+        conn.commit()
         new_obj = {
-            'id': iD,
+            'id': cursor.lastrowid,
             'author': new_author,
             'language': new_lang,
             'title': new_title
         }
-        books_list.append(new_obj)
         
         return jsonify(new_obj), 201
 
 
-@app.route('/book/<int:id>', methods=['GET', 'PUT', 'DELETE'])
+@app.route('/book/<id>', methods=['GET', 'PUT', 'DELETE'])
 def single_book(id):
+    conn = db_connection()
+    cursor = conn.cursor()
+    book = None
     if request.method == 'GET':
-        for book in books_list:
-            if book['id'] == id:
-                return jsonify(book),200
-            pass
-           
-        return jsonify({'error':'Book not found'}),404
+        cursor.execute("SELECT * FROM book WHERE id=?", (id,))
+        
+        for row in cursor.fetchall():
+            book = dict(id=row[0], author=row[1], language=row[2], title=[row[3]])
+            
+        if book is not None:
+            return jsonify(book), 200
+        else:
+            return jsonify({'message':'Nothing found!'}), 404
             
     if request.method == 'PUT':
-        for book in books_list:
-            if book['id'] == id:
-                book['author'] = request.form['author']
-                book['language'] = request.form['language']
-                book['title'] = request.form['title']
-                
-                book_update = {
-                    'id': id,
-                    'author': book['author'],
-                    'language': book['language'],
-                    'title': book['title']
-                }
-                return jsonify(book_update),202
+        sql = """UPDATE 
+        """
+        book['author'] = request.form['author'].capitalize()
+        book['language'] = request.form['language'].capitalize()
+        book['title'] = request.form['title'].capitalize()
+        
+        book_update = {
+            'id': id,
+            'author': book['author'],
+            'language': book['language'],
+            'title': book['title']
+        }
+        return jsonify(book_update),202
     
     if request.method == 'DELETE':
         for index, book in enumerate(books_list):
