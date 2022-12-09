@@ -22,9 +22,13 @@ books_list = [
 ]
 
 
-@app.route('/books')
-def index():
-    return 'Hello world'
+@app.route('/books', methods=['GET', 'POST'])
+def books():
+    if request.method == 'GET':
+        if len(books_list)>0:
+            return jsonify(books_list)
+        else:
+            return 'Nothing found!'
 
 
 @app.route('/<name>')
